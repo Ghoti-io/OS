@@ -70,6 +70,13 @@ $(APP_DIR)/testFile: \
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ $< $(LDFLAGS) $(TESTFLAGS) $(OSLIBRARY)
 
 ####################################################################
+# Helper data files
+####################################################################
+$(APP_DIR)/fileExists.txt:
+	@mkdir -p $(@D)
+	@echo "Hello World\n" > $(APP_DIR)/fileExists.txt
+
+####################################################################
 # Commands
 ####################################################################
 
@@ -99,7 +106,8 @@ test-watch: ## Watch the file directory for changes and run the unit tests
 
 test: ## Make and run the Unit tests
 test: \
-				$(APP_DIR)/testFile
+				$(APP_DIR)/testFile \
+				$(APP_DIR)/fileExists.txt
 	@echo "\033[0;32m"
 	@echo "############################"
 	@echo "### Running normal tests ###"
