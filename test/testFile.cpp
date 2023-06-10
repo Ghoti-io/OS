@@ -13,10 +13,14 @@ using namespace Ghoti::OS;
 
 TEST(File, Constructor) {
   {
-    File f{"fileExists.txt", "r"};
+    File f{"./build/apps/fileExists.txt"};
+    f.open("r");
   }
   {
-    File f{"fileDoesntExist.txt", "r"};
+    File f{"fileDoesntExist.txt"};
+  }
+  {
+    auto f{File::createTemp("abc123")};
   }
 }
 
