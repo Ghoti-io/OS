@@ -59,9 +59,34 @@ TEST(File, MissingFile) {
 }
 
 TEST(File, TempFile) {
+  string path{};
   {
     auto f{File::createTemp("abc123")};
+    string contents{"file contents"};
+
+    // Save the path of the temporary file so that later we can verify that the
+    // file was deleted.
+    path = f.getPath();
+
+    // Open the temporary file.
+    EXPECT_TRUE(f.open("w"));
+
+    // Write to the temporary file.
+    f.file << contents;
+    EXPECT_TRUE(f.close());
+
+    // Read back the contents of the temporary file.
+    EXPECT_TRUE(f.open("r"));
+    EXPECT_EQ(string{f}, contents);
+    EXPECT_TRUE(f.close());
+
+    // The temporary file will now pass out of scope and should be
+    // automatically deleted.
   }
+
+  // The file should not exist.
+  File f{path};
+  EXPECT_FALSE(f.open("r"));
 }
 
 int main(int argc, char** argv) {
