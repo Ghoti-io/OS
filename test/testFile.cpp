@@ -12,10 +12,13 @@ using namespace std;
 using namespace Ghoti::OS;
 
 TEST(File, ExistingFile) {
+  string path{"./build/apps/fileExists.txt"};
+
   // Open an existing file.
   File f{"./build/apps/fileExists.txt"};
   EXPECT_TRUE(f.open("r"));
   EXPECT_TRUE(f.file.is_open());
+  EXPECT_EQ(f.getPath(), path);
 
   // Read contents.
   EXPECT_EQ(string{f}, "Hello World\n");
@@ -29,6 +32,11 @@ TEST(File, ExistingFile) {
 
   // Reading a closed file shouldn't work.
   EXPECT_EQ(string{f}, "");
+
+  // Reopening the file works.
+  EXPECT_TRUE(f.open("r"));
+  EXPECT_TRUE(f.file.is_open());
+  EXPECT_EQ(string{f}, "Hello World\n");
 }
 
 TEST(File, MissingFile) {

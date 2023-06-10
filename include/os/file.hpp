@@ -79,6 +79,11 @@ class File {
   operator std::string();
 
   /**
+   * Get the current path.
+   */
+  const std::string & getPath() const;
+
+  /**
    * The file stream.
    */
   std::fstream file;

@@ -100,3 +100,7 @@ File::operator string() {
   return ss.str();
 }
 
+const string & File::getPath() const {
+  return this->path;
+}
+
