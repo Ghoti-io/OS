@@ -6,6 +6,7 @@
 #include <cstdlib>    // for mkstemp()
 #include <filesystem> // for filesystem::
 #include <iostream>
+#include <sstream>
 #include <unistd.h>   // for ::close()
 
 using namespace std;
@@ -90,5 +91,12 @@ File File::createTemp([[maybe_unused]]const std::string & pattern) {
   }
 
   return File{};
+}
+
+File::operator string() {
+  stringstream ss;
+  this->file.seekg(0);
+  ss << this->file.rdbuf();
+  return ss.str();
 }
 

@@ -74,7 +74,7 @@ $(APP_DIR)/testFile: \
 ####################################################################
 $(APP_DIR)/fileExists.txt:
 	@mkdir -p $(@D)
-	@echo "Hello World\n" > $(APP_DIR)/fileExists.txt
+	@echo "Hello World" > $(APP_DIR)/fileExists.txt
 
 ####################################################################
 # Commands

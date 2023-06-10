@@ -74,6 +74,11 @@ class File {
   static File createTemp(const std::string & pattern);
 
   /**
+   * Return the contents of the file as a string.
+   */
+  operator std::string();
+
+  /**
    * The file stream.
    */
   std::fstream file;
