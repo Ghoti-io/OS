@@ -1,0 +1,7 @@
+Name: Ghoti.io OS
+Description: Libraries and tools for interacting with the OS
+Version: 0.0.0
+URL: https://github.com/Ghoti-io
+Libs: -lghoti.io-os
+CFlags: -std=c++20 -L /usr/local/lib/ghoti.io
+
