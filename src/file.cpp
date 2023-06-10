@@ -71,7 +71,6 @@ bool File::close() {
 
   this->isRead = false;
   this->isWrite = false;
-  this->isTemp = false;
 
   return !this->file.fail();
 }

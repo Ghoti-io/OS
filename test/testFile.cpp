@@ -11,11 +11,22 @@
 using namespace std;
 using namespace Ghoti::OS;
 
+TEST(File, DefaultConstructor) {
+  // Default-constructed file should not actually point to anything.
+  File f{};
+  EXPECT_EQ(f.getPath(), "");
+  EXPECT_FALSE(f.file.is_open());
+  EXPECT_FALSE(f.open("w"));
+  EXPECT_FALSE(f.open("r"));
+  EXPECT_FALSE(f.close());
+}
+
 TEST(File, ExistingFile) {
   string path{"./build/apps/fileExists.txt"};
 
   // Open an existing file.
   File f{"./build/apps/fileExists.txt"};
+  EXPECT_FALSE(f.file.is_open());
   EXPECT_TRUE(f.open("r"));
   EXPECT_TRUE(f.file.is_open());
   EXPECT_EQ(f.getPath(), path);
@@ -42,7 +53,7 @@ TEST(File, ExistingFile) {
 TEST(File, MissingFile) {
   {
     File f{"fileDoesntExist.txt"};
-    f.open("r");
+    EXPECT_FALSE(f.open("r"));
     EXPECT_FALSE(f.file.is_open());
   }
 }

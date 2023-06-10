@@ -16,6 +16,11 @@ namespace Ghoti::OS {
 class File {
   public:
   /**
+   * Default constructor.
+   */
+  File();
+
+  /**
    * Constructor for a named path.
    *
    * @param path The file to open.
@@ -89,11 +94,6 @@ class File {
   std::fstream file;
 
   private:
-  /**
-   * Default constructor, private.
-   */
-  File();
-
   std::string path;
   std::string mode;
   bool isRead;
