@@ -17,8 +17,8 @@ TEST(File, DefaultConstructor) {
   File f{};
   EXPECT_EQ(f.getPath(), "");
   EXPECT_FALSE(f.file.is_open());
-  EXPECT_EQ(f.open("w"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
-  EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+  EXPECT_EQ(f.open("w"), Ghoti::OS::error_code::file_could_not_be_opened);
+  EXPECT_EQ(f.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
   EXPECT_FALSE(f.close());
 }
 
@@ -54,7 +54,7 @@ TEST(File, ExistingFile) {
 TEST(File, MissingFile) {
   {
     File f{"fileDoesntExist.txt"};
-    EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+    EXPECT_EQ(f.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
     EXPECT_FALSE(f.file.is_open());
   }
 }
@@ -87,14 +87,14 @@ TEST(File, TempFile) {
 
   // The file should not exist.
   File f{path};
-  EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+  EXPECT_EQ(f.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
 }
 
 TEST(Delete, MissingFile) {
   // Delete a file that does not exist.
   {
     File f{"fileDoesntExist.txt"};
-    EXPECT_EQ(f.remove(), make_error_code(Ghoti::OS::error_code::file_does_not_exist));
+    EXPECT_EQ(f.remove(), Ghoti::OS::error_code::file_does_not_exist);
   }
 }
 
@@ -126,7 +126,7 @@ TEST(Delete, ExistingFile) {
   // Verify that the file was deleted.
   {
     File f{newName};
-    EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+    EXPECT_EQ(f.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
   }
 }
 
@@ -153,7 +153,7 @@ TEST(Rename, OverExisting) {
 
 
     // Attempt to rename one file to that of the other.
-    EXPECT_EQ(f2.rename(f1.getPath()), make_error_code(Ghoti::OS::error_code::file_exists_at_target_path));
+    EXPECT_EQ(f2.rename(f1.getPath()), Ghoti::OS::error_code::file_exists_at_target_path);
     EXPECT_EQ(f2.getPath(), f2Path);
   }
 
@@ -162,8 +162,8 @@ TEST(Rename, OverExisting) {
   {
     File f1{f1Path};
     File f2{f2Path};
-    EXPECT_EQ(f1.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
-    EXPECT_EQ(f2.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+    EXPECT_EQ(f1.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
+    EXPECT_EQ(f2.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
   }
 }
 

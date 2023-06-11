@@ -45,3 +45,7 @@ std::error_condition make_error_condition(OS::error_code e) {
   return std::error_condition(static_cast<int>(e), OS::getErrorCategory());
 }
 
+bool std::operator==(const std::error_code & lhs, Ghoti::OS::error_code rhs) {
+  return lhs == ::make_error_code(rhs);
+}
+

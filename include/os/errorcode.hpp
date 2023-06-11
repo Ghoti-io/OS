@@ -84,7 +84,21 @@ namespace std {
    */
   template<>
   struct is_error_condition_enum<Ghoti::OS::error_code> : public true_type {};
+
+  /**
+   * Custom comparitor so that OS::error_code values can be compared directly
+   * against std::error_code objects.
+   *
+   * This is a quality-of-life improvement to make writing Google Test asserts
+   * more compact.
+   *
+   * @param lhs The std::error_code to compare.
+   * @param rhs The Ghoti::OS::error_code to compare.
+   * @return True if they are equal, false otherwise.
+   */
+  bool operator==(const std::error_code & lhs, Ghoti::OS::error_code rhs);
 }
+
 
 #endif // GHOTI_OS_ERRORCODE_HPP
 
