@@ -80,6 +80,15 @@ std::error_code File::rename(const string & destinationPath) {
   std::error_code ec{};
   this->close();
 
+  // The behavior of filesystem::rename() is implementation-specific when the
+  // target already exists, and therefore unreliable for this library.
+  // As such, we will check manually to verify that the destination path is not
+  // already in use.  Unfortunately, this is not atomic.
+  // https://en.cppreference.com/w/cpp/io/c/rename
+  // https://en.cppreference.com/w/cpp/filesystem/rename
+  if (filesystem::exists(destinationPath)) {
+    return make_error_code(OS::error_code::file_exists_at_target_path);
+  }
   filesystem::rename(this->path, destinationPath, ec);
   this->isTemp = false;
 

@@ -18,6 +18,8 @@ string OS::error_category::message(int ev) const {
   switch (ev) {
     case static_cast<int>(OS::error_code::file_does_not_exist):
       return "File does not exist";
+    case static_cast<int>(OS::error_code::file_exists_at_target_path):
+      return "File exists at target path";
   }
   return "";
 }

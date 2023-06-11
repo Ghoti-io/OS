@@ -15,7 +15,8 @@ namespace Ghoti::OS {
  * List of error codes this library may generate.
  */
 enum class error_code {
-  file_does_not_exist = 1
+  file_does_not_exist = 1,
+  file_exists_at_target_path,
 };
 
 /**

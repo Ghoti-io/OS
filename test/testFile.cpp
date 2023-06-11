@@ -105,11 +105,11 @@ TEST(Delete, ExistingFile) {
   // Create a temp file and rename it so that it is not automatically deleted.
   {
     auto f{File::createTemp("abc123")};
-    f.open("w");
+    EXPECT_TRUE(f.open("w"));
     f.file << contents;
 
     newName = f.getPath() + ".2";
-    f.rename(newName);
+    EXPECT_FALSE(f.rename(newName));
   }
 
   // Open the file again to verify that the rename succeeded, then delete the
@@ -127,6 +127,43 @@ TEST(Delete, ExistingFile) {
   {
     File f{newName};
     EXPECT_FALSE(f.open("r"));
+  }
+}
+
+TEST(Rename, OverExisting) {
+  string f1Path{};
+  string f2Path{};
+  {
+    // Create two files.
+    auto f1{File::createTemp("abc123")};
+    auto f2{File::createTemp("abc123")};
+    f1Path = f1.getPath();
+    f2Path = f2.getPath();
+
+    // Verify that they do not have the same path.
+    EXPECT_NE(f1.getPath(), f2.getPath());
+
+    // Write something into both files to confirm that they both exist.
+    EXPECT_TRUE(f1.open("w"));
+    f1.file << "1";
+    EXPECT_TRUE(f1.close());
+    EXPECT_TRUE(f2.open("w"));
+    f2.file << "2";
+    EXPECT_TRUE(f2.close());
+
+
+    // Attempt to rename one file to that of the other.
+    EXPECT_EQ(f2.rename(f1.getPath()), make_error_code(Ghoti::OS::error_code::file_exists_at_target_path));
+    EXPECT_EQ(f2.getPath(), f2Path);
+  }
+
+  // Verify that all of the rename attempts did not keep the files from being
+  // properly cleaned up, since they were both temp files.
+  {
+    File f1{f1Path};
+    File f2{f2Path};
+    EXPECT_FALSE(f1.open("r"));
+    EXPECT_FALSE(f2.open("r"));
   }
 }
 
