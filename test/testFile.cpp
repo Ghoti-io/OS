@@ -91,8 +91,43 @@ TEST(File, TempFile) {
 }
 
 TEST(Delete, MissingFile) {
-  File f{"fileDoesntExist.txt"};
-  EXPECT_EQ(f.remove(), make_error_code(Ghoti::OS::error_code::file_does_not_exist));
+  // Delete a file that does not exist.
+  {
+    File f{"fileDoesntExist.txt"};
+    EXPECT_EQ(f.remove(), make_error_code(Ghoti::OS::error_code::file_does_not_exist));
+  }
+}
+
+TEST(Delete, ExistingFile) {
+  string newName{};
+  string contents{"file contents"};
+
+  // Create a temp file and rename it so that it is not automatically deleted.
+  {
+    auto f{File::createTemp("abc123")};
+    f.open("w");
+    f.file << contents;
+
+    newName = f.getPath() + ".2";
+    f.rename(newName);
+  }
+
+  // Open the file again to verify that the rename succeeded, then delete the
+  // file.
+  {
+    File f{newName};
+    EXPECT_TRUE(f.open("r"));
+    EXPECT_EQ(string{f}, contents);
+    EXPECT_TRUE(f.close());
+
+    f.remove();
+  }
+
+  // Verify that the file was deleted.
+  {
+    File f{newName};
+    EXPECT_FALSE(f.open("r"));
+  }
 }
 
 int main(int argc, char** argv) {
