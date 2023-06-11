@@ -65,8 +65,10 @@ class File {
 
   /**
    * Close the file.
+   *
+   * @return The error code resulting from the operation (if any).
    */
-  bool close();
+  std::error_code close();
 
   /**
    * Move or rename the file.

@@ -71,13 +71,15 @@ std::error_code File::open(const char * mode) {
     : make_error_code(OS::error_code::file_could_not_be_opened);
 }
 
-bool File::close() {
+std::error_code File::close() {
   this->file.close();
 
   this->isRead = false;
   this->isWrite = false;
 
-  return !this->file.fail();
+  return this->file.fail()
+    ? make_error_code(OS::error_code::file_could_not_be_closed)
+    : std::error_code{};
 }
 
 std::error_code File::rename(const string & destinationPath) {

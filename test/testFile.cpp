@@ -19,7 +19,7 @@ TEST(File, DefaultConstructor) {
   EXPECT_FALSE(f.file.is_open());
   EXPECT_EQ(f.open("w"), Ghoti::OS::error_code::file_could_not_be_opened);
   EXPECT_EQ(f.open("r"), Ghoti::OS::error_code::file_could_not_be_opened);
-  EXPECT_FALSE(f.close());
+  EXPECT_EQ(f.close(), Ghoti::OS::error_code::file_could_not_be_closed);
 }
 
 TEST(File, ExistingFile) {
@@ -39,7 +39,7 @@ TEST(File, ExistingFile) {
   EXPECT_EQ(string{f}, "Hello World\n");
 
   // Close the file.
-  EXPECT_TRUE(f.close());
+  EXPECT_FALSE(f.close());
   EXPECT_FALSE(f.file.is_open());
 
   // Reading a closed file shouldn't work.
@@ -74,12 +74,12 @@ TEST(File, TempFile) {
 
     // Write to the temporary file.
     f.file << contents;
-    EXPECT_TRUE(f.close());
+    EXPECT_FALSE(f.close());
 
     // Read back the contents of the temporary file.
     EXPECT_FALSE(f.open("r"));
     EXPECT_EQ(string{f}, contents);
-    EXPECT_TRUE(f.close());
+    EXPECT_FALSE(f.close());
 
     // The temporary file will now pass out of scope and should be
     // automatically deleted.
@@ -118,7 +118,7 @@ TEST(Delete, ExistingFile) {
     File f{newName};
     EXPECT_FALSE(f.open("r"));
     EXPECT_EQ(string{f}, contents);
-    EXPECT_TRUE(f.close());
+    EXPECT_FALSE(f.close());
 
     f.remove();
   }
@@ -146,10 +146,10 @@ TEST(Rename, OverExisting) {
     // Write something into both files to confirm that they both exist.
     EXPECT_FALSE(f1.open("w"));
     f1.file << "1";
-    EXPECT_TRUE(f1.close());
+    EXPECT_FALSE(f1.close());
     EXPECT_FALSE(f2.open("w"));
     f2.file << "2";
-    EXPECT_TRUE(f2.close());
+    EXPECT_FALSE(f2.close());
 
 
     // Attempt to rename one file to that of the other.
