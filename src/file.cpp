@@ -3,6 +3,7 @@
  */
 
 #include "os/file.hpp"
+#include "os/errorcode.hpp"
 #include <cstdlib>    // for mkstemp()
 #include <filesystem> // for filesystem::
 #include <iostream>
@@ -73,6 +74,33 @@ bool File::close() {
   this->isWrite = false;
 
   return !this->file.fail();
+}
+
+std::error_code File::rename(const string & destinationPath) {
+  std::error_code ec{};
+  this->close();
+
+  filesystem::rename(this->path, destinationPath, ec);
+  this->isTemp = false;
+
+  return ec;
+}
+
+std::error_code File::remove() {
+  std::error_code ec{};
+  this->close();
+
+  if (!filesystem::remove(this->path, ec)) {
+    // The file was not removed.  If there is no error, it is because there was
+    // no file to be deleted in the first place.
+    if (!ec) {
+      ec = make_error_code(OS::error_code::file_does_not_exist);
+    }
+  }
+  this->file = {};
+  this->isTemp = false;
+
+  return ec;
 }
 
 File File::createTemp([[maybe_unused]]const std::string & pattern) {

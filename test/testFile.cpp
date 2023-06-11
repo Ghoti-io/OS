@@ -7,6 +7,7 @@
 #include <string>
 #include <gtest/gtest.h>
 #include "os/file.hpp"
+#include "os/errorcode.hpp"
 
 using namespace std;
 using namespace Ghoti::OS;
@@ -87,6 +88,11 @@ TEST(File, TempFile) {
   // The file should not exist.
   File f{path};
   EXPECT_FALSE(f.open("r"));
+}
+
+TEST(Delete, MissingFile) {
+  File f{"fileDoesntExist.txt"};
+  EXPECT_EQ(f.remove(), make_error_code(Ghoti::OS::error_code::file_does_not_exist));
 }
 
 int main(int argc, char** argv) {

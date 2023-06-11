@@ -13,7 +13,9 @@ SO_NAME := $(BASE_NAME).$(MAJOR_VERSION)
 TARGET := $(SO_NAME).$(MINOR_VERSION)
 
 INCLUDE := -I include/ -I include/os
-LIBOBJECTS := $(OBJ_DIR)/file.o
+LIBOBJECTS := \
+							$(OBJ_DIR)/errorcode.o \
+							$(OBJ_DIR)/file.o
 
 TESTFLAGS := `pkg-config --libs --cflags gtest`
 
@@ -28,8 +30,11 @@ all: $(APP_DIR)/$(TARGET) ## Build the shared library
 ####################################################################
 DEP_MACROS = \
 	include/os/macros.hpp
+DEP_ERRORCODE = \
+	include/os/errorcode.hpp
 DEP_FILE = \
 	$(DEP_MACROS) \
+	$(DEP_ERRORCODE) \
 	include/os/file.hpp
 
 ####################################################################
@@ -40,6 +45,10 @@ $(LIBOBJECTS) :
 	@echo "\n### Compiling $@ ###"
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -MMD -o $@ -fPIC
+
+$(OBJ_DIR)/errorcode.o: \
+				src/errorcode.cpp \
+				$(DEP_ERRORCODE)
 
 $(OBJ_DIR)/file.o: \
 				src/file.cpp \

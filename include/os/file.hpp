@@ -69,6 +69,30 @@ class File {
   bool close();
 
   /**
+   * Move or rename the file.
+   *
+   * If the source file is a temp file, the destination will no longer be
+   * considered to be a temp file (meaning the file will not be automatically
+   * deleted when the object goes out of scope).
+   *
+   * If the file is open, it will be automatically closed and must be re-opened
+   * explicitly.
+   *
+   * @param destinationPath The target name for the file.
+   * @return The error code resulting from the operation (if any).
+   */
+  std::error_code rename(const std::string & destinationPath);
+
+  /**
+   * Remove the file.
+   *
+   * If the file is open, it will be automatically closed.
+   *
+   * @return The error code resulting from the operation (if any).
+   */
+  std::error_code remove();
+
+  /**
    * Create a temporary file in the OS temp directory, matching the supplied
    * pattern.  Characters will be added to the end if the name as needed to
    * avoid file conflicts.
