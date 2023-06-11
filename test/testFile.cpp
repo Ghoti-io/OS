@@ -17,8 +17,8 @@ TEST(File, DefaultConstructor) {
   File f{};
   EXPECT_EQ(f.getPath(), "");
   EXPECT_FALSE(f.file.is_open());
-  EXPECT_FALSE(f.open("w"));
-  EXPECT_FALSE(f.open("r"));
+  EXPECT_EQ(f.open("w"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+  EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
   EXPECT_FALSE(f.close());
 }
 
@@ -28,7 +28,7 @@ TEST(File, ExistingFile) {
   // Open an existing file.
   File f{"./build/apps/fileExists.txt"};
   EXPECT_FALSE(f.file.is_open());
-  EXPECT_TRUE(f.open("r"));
+  EXPECT_FALSE(f.open("r"));
   EXPECT_TRUE(f.file.is_open());
   EXPECT_EQ(f.getPath(), path);
 
@@ -46,7 +46,7 @@ TEST(File, ExistingFile) {
   EXPECT_EQ(string{f}, "");
 
   // Reopening the file works.
-  EXPECT_TRUE(f.open("r"));
+  EXPECT_FALSE(f.open("r"));
   EXPECT_TRUE(f.file.is_open());
   EXPECT_EQ(string{f}, "Hello World\n");
 }
@@ -54,7 +54,7 @@ TEST(File, ExistingFile) {
 TEST(File, MissingFile) {
   {
     File f{"fileDoesntExist.txt"};
-    EXPECT_FALSE(f.open("r"));
+    EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
     EXPECT_FALSE(f.file.is_open());
   }
 }
@@ -70,14 +70,14 @@ TEST(File, TempFile) {
     path = f.getPath();
 
     // Open the temporary file.
-    EXPECT_TRUE(f.open("w"));
+    EXPECT_FALSE(f.open("w"));
 
     // Write to the temporary file.
     f.file << contents;
     EXPECT_TRUE(f.close());
 
     // Read back the contents of the temporary file.
-    EXPECT_TRUE(f.open("r"));
+    EXPECT_FALSE(f.open("r"));
     EXPECT_EQ(string{f}, contents);
     EXPECT_TRUE(f.close());
 
@@ -87,7 +87,7 @@ TEST(File, TempFile) {
 
   // The file should not exist.
   File f{path};
-  EXPECT_FALSE(f.open("r"));
+  EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
 }
 
 TEST(Delete, MissingFile) {
@@ -105,7 +105,7 @@ TEST(Delete, ExistingFile) {
   // Create a temp file and rename it so that it is not automatically deleted.
   {
     auto f{File::createTemp("abc123")};
-    EXPECT_TRUE(f.open("w"));
+    EXPECT_FALSE(f.open("w"));
     f.file << contents;
 
     newName = f.getPath() + ".2";
@@ -116,7 +116,7 @@ TEST(Delete, ExistingFile) {
   // file.
   {
     File f{newName};
-    EXPECT_TRUE(f.open("r"));
+    EXPECT_FALSE(f.open("r"));
     EXPECT_EQ(string{f}, contents);
     EXPECT_TRUE(f.close());
 
@@ -126,7 +126,7 @@ TEST(Delete, ExistingFile) {
   // Verify that the file was deleted.
   {
     File f{newName};
-    EXPECT_FALSE(f.open("r"));
+    EXPECT_EQ(f.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
   }
 }
 
@@ -144,10 +144,10 @@ TEST(Rename, OverExisting) {
     EXPECT_NE(f1.getPath(), f2.getPath());
 
     // Write something into both files to confirm that they both exist.
-    EXPECT_TRUE(f1.open("w"));
+    EXPECT_FALSE(f1.open("w"));
     f1.file << "1";
     EXPECT_TRUE(f1.close());
-    EXPECT_TRUE(f2.open("w"));
+    EXPECT_FALSE(f2.open("w"));
     f2.file << "2";
     EXPECT_TRUE(f2.close());
 
@@ -162,8 +162,8 @@ TEST(Rename, OverExisting) {
   {
     File f1{f1Path};
     File f2{f2Path};
-    EXPECT_FALSE(f1.open("r"));
-    EXPECT_FALSE(f2.open("r"));
+    EXPECT_EQ(f1.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
+    EXPECT_EQ(f2.open("r"), make_error_code(Ghoti::OS::error_code::file_could_not_be_opened));
   }
 }
 

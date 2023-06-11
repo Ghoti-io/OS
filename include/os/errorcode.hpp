@@ -17,6 +17,8 @@ namespace Ghoti::OS {
 enum class error_code {
   file_does_not_exist = 1,
   file_exists_at_target_path,
+  file_could_not_be_closed,
+  file_could_not_be_opened,
 };
 
 /**

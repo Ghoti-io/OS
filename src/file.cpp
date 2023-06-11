@@ -46,11 +46,11 @@ File::~File() {
   }
 }
 
-bool File::open(const char * mode) {
+std::error_code File::open(const char * mode) {
   // Close any open file.
   if (this->file.is_open()) {
     if (!this->close()) {
-      return false;
+      return make_error_code(OS::error_code::file_could_not_be_closed);
     }
   }
 
@@ -64,7 +64,11 @@ bool File::open(const char * mode) {
     this->file.open(this->path, ios::out | ios::binary);
     this->isWrite = true;
   }
-  return this->file.is_open();
+
+  // Return whether or not there was an error.
+  return this->file.is_open()
+    ? std::error_code{}
+    : make_error_code(OS::error_code::file_could_not_be_opened);
 }
 
 bool File::close() {

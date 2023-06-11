@@ -59,9 +59,9 @@ class File {
    *
    * @param mode The mode in which to open the file, taken from
    *   <a href="https://en.cppreference.com/w/cpp/io/c/fopen">std::fopen</a>.
-   * @return Whether or not the file open succeded.
+   * @return The error code resulting from the operation (if any).
    */
-  bool open(const char * mode);
+  std::error_code open(const char * mode);
 
   /**
    * Close the file.
