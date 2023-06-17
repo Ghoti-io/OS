@@ -118,7 +118,7 @@ std::error_code File::remove() {
   return ec;
 }
 
-File File::createTemp([[maybe_unused]]const std::string & pattern) {
+File File::createTemp(const std::string & pattern) {
   // Attempt to create a file in the OS temp directory.
   string path = filesystem::temp_directory_path() / (pattern + ".XXXXXX");
   char * pathCStr = const_cast<char *>(path.c_str());
@@ -135,7 +135,7 @@ File File::createTemp([[maybe_unused]]const std::string & pattern) {
   return File{};
 }
 
-File::operator string() {
+File::operator string() const {
   stringstream ss;
   this->file.seekg(0);
   ss << this->file.rdbuf();

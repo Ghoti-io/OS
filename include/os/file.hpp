@@ -107,7 +107,7 @@ class File {
   /**
    * Return the contents of the file as a string.
    */
-  operator std::string();
+  operator std::string() const;
 
   /**
    * Get the current path.
@@ -117,7 +117,7 @@ class File {
   /**
    * The file stream.
    */
-  std::fstream file;
+  mutable std::fstream file;
 
   private:
   std::string path;
