@@ -46,29 +46,36 @@ File::~File() {
   }
 }
 
-std::error_code File::open(const char * mode) {
+std::error_code File::open() {
   // Close any open file.
   if (this->file.is_open()) {
-    if (!this->close()) {
-      return make_error_code(OS::ErrorCode::FILE_COULD_NOT_BE_CLOSED);
+    auto error = this->close();
+    if (error) {
+      return error;
     }
   }
 
   // Open the file in the appropriate mode.
-  this->mode = mode;
-  if (this->mode == "r") {
-    this->file.open(this->path, ios::in | ios::binary);
-    this->isRead = true;
-  }
-  else if (this->mode == "w") {
-    this->file.open(this->path, ios::out | ios::binary);
-    this->isWrite = true;
-  }
+  this->file.open(this->path, this->mode);
 
   // Return whether or not there was an error.
   return this->file.is_open()
     ? std::error_code{}
     : make_error_code(OS::ErrorCode::FILE_COULD_NOT_BE_OPENED);
+}
+
+std::error_code File::openRead() {
+  this->mode = ios::in | ios::binary;
+  this->isRead = true;
+  this->isWrite = false;
+  return this->open();
+}
+
+std::error_code File::openWrite() {
+  this->mode = ios::out | ios::binary;
+  this->isRead = false;
+  this->isWrite = true;
+  return this->open();
 }
 
 std::error_code File::close() {
@@ -136,9 +143,9 @@ File File::createTemp(const std::string & pattern) {
 }
 
 File::operator string() const {
+  fstream f{this->path, this->mode};
   stringstream ss;
-  this->file.seekg(0);
-  ss << this->file.rdbuf();
+  ss << f.rdbuf();
   return ss.str();
 }
 

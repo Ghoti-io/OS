@@ -55,13 +55,18 @@ class File {
   ~File();
 
   /**
-   * Open a file for reading or writing.
+   * Open a file for reading.
    *
-   * @param mode The mode in which to open the file, taken from
-   *   <a href="https://en.cppreference.com/w/cpp/io/c/fopen">std::fopen</a>.
    * @return The error code resulting from the operation (if any).
    */
-  std::error_code open(const char * mode);
+  std::error_code openRead();
+
+  /**
+   * Open a file for writing.
+   *
+   * @return The error code resulting from the operation (if any).
+   */
+  std::error_code openWrite();
 
   /**
    * Close the file.
@@ -117,14 +122,16 @@ class File {
   /**
    * The file stream.
    */
-  mutable std::fstream file;
+  std::fstream file;
 
   private:
   std::string path;
-  std::string mode;
+  std::ios_base::openmode mode;
   bool isRead;
   bool isWrite;
   bool isTemp;
+
+  std::error_code open();
 };
 }
 
