@@ -16,20 +16,15 @@ TEST(File, DefaultConstructor) {
   // Default-constructed file should not actually point to anything.
   File f{};
   EXPECT_EQ(f.getPath(), "");
-  EXPECT_FALSE(f.file.is_open());
-  EXPECT_EQ(f.openWrite(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
-  EXPECT_EQ(f.openRead(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
-  EXPECT_EQ(f.close(), ErrorCode::FILE_COULD_NOT_BE_CLOSED);
+  EXPECT_EQ(f.getLastError(), ErrorCode::NO_FILE_PATH_SPECIFIED);
 }
 
 TEST(File, ExistingFile) {
   string path{"./build/apps/fileExists.txt"};
 
   // Open an existing file.
-  File f{"./build/apps/fileExists.txt"};
-  EXPECT_FALSE(f.file.is_open());
-  EXPECT_FALSE(f.openRead());
-  EXPECT_TRUE(f.file.is_open());
+  File f{path};
+  EXPECT_FALSE(f.getLastError());
   EXPECT_EQ(f.getPath(), path);
 
   // Read contents.
@@ -37,22 +32,12 @@ TEST(File, ExistingFile) {
 
   // Reading should reset the file to the beginning.
   EXPECT_EQ(string{f}, "Hello World\n");
-
-  // Close the file.
-  EXPECT_FALSE(f.close());
-  EXPECT_FALSE(f.file.is_open());
-
-  // Reopening the file works.
-  EXPECT_FALSE(f.openRead());
-  EXPECT_TRUE(f.file.is_open());
-  EXPECT_EQ(string{f}, "Hello World\n");
 }
 
 TEST(File, MissingFile) {
   {
     File f{"fileDoesntExist.txt"};
-    EXPECT_EQ(f.openRead(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
-    EXPECT_FALSE(f.file.is_open());
+    EXPECT_EQ(f.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
 }
 
@@ -60,23 +45,27 @@ TEST(File, TempFile) {
   string path{};
   {
     auto f{File::createTemp("abc123")};
+    EXPECT_FALSE(f.getLastError());
     string contents{"file contents"};
 
     // Save the path of the temporary file so that later we can verify that the
     // file was deleted.
     path = f.getPath();
 
-    // Open the temporary file.
-    EXPECT_FALSE(f.openWrite());
-
     // Write to the temporary file.
-    f.file << contents;
-    EXPECT_FALSE(f.close());
+    f.append(contents);
+    EXPECT_FALSE(f.getLastError());
 
     // Read back the contents of the temporary file.
-    EXPECT_FALSE(f.openRead());
     EXPECT_EQ(string{f}, contents);
-    EXPECT_FALSE(f.close());
+    EXPECT_FALSE(f.getLastError());
+
+    // Write to the temporary file again.
+    f.append(contents);
+    EXPECT_FALSE(f.getLastError());
+
+    // Read back the contents of the temporary file.
+    EXPECT_EQ(string{f}, contents + contents);
 
     // The temporary file will now pass out of scope and should be
     // automatically deleted.
@@ -84,7 +73,7 @@ TEST(File, TempFile) {
 
   // The file should not exist.
   File f{path};
-  EXPECT_EQ(f.openRead(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
+  EXPECT_EQ(f.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
 }
 
 TEST(Delete, MissingFile) {
@@ -102,28 +91,29 @@ TEST(Delete, ExistingFile) {
   // Create a temp file and rename it so that it is not automatically deleted.
   {
     auto f{File::createTemp("abc123")};
-    EXPECT_FALSE(f.openWrite());
-    f.file << contents;
+    f.append(contents);
+    EXPECT_FALSE(f.getLastError());
 
     newName = f.getPath() + ".2";
     EXPECT_FALSE(f.rename(newName));
+    EXPECT_FALSE(f.getLastError());
   }
 
   // Open the file again to verify that the rename succeeded, then delete the
   // file.
   {
     File f{newName};
-    EXPECT_FALSE(f.openRead());
     EXPECT_EQ(string{f}, contents);
-    EXPECT_FALSE(f.close());
+    EXPECT_FALSE(f.getLastError());
 
     f.remove();
+    EXPECT_FALSE(f.getLastError());
   }
 
   // Verify that the file was deleted.
   {
     File f{newName};
-    EXPECT_EQ(f.openRead(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
+    EXPECT_EQ(f.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
 }
 
@@ -141,16 +131,15 @@ TEST(Rename, OverExisting) {
     EXPECT_NE(f1.getPath(), f2.getPath());
 
     // Write something into both files to confirm that they both exist.
-    EXPECT_FALSE(f1.openWrite());
-    f1.file << "1";
-    EXPECT_FALSE(f1.close());
-    EXPECT_FALSE(f2.openWrite());
-    f2.file << "2";
-    EXPECT_FALSE(f2.close());
+    f1.append("1");
+    EXPECT_FALSE(f1.getLastError());
+    f2.append("2");
+    EXPECT_FALSE(f2.getLastError());
 
 
     // Attempt to rename one file to that of the other.
     EXPECT_EQ(f2.rename(f1.getPath()), ErrorCode::FILE_EXISTS_AT_TARGET_PATH);
+    EXPECT_TRUE(f2.getLastError());
     EXPECT_EQ(f2.getPath(), f2Path);
   }
 
@@ -159,8 +148,8 @@ TEST(Rename, OverExisting) {
   {
     File f1{f1Path};
     File f2{f2Path};
-    EXPECT_EQ(f1.openRead(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
-    EXPECT_EQ(f2.openRead(), ErrorCode::FILE_COULD_NOT_BE_OPENED);
+    EXPECT_EQ(f1.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
+    EXPECT_EQ(f2.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
 }
 

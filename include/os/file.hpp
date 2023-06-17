@@ -55,27 +55,6 @@ class File {
   ~File();
 
   /**
-   * Open a file for reading.
-   *
-   * @return The error code resulting from the operation (if any).
-   */
-  std::error_code openRead();
-
-  /**
-   * Open a file for writing.
-   *
-   * @return The error code resulting from the operation (if any).
-   */
-  std::error_code openWrite();
-
-  /**
-   * Close the file.
-   *
-   * @return The error code resulting from the operation (if any).
-   */
-  std::error_code close();
-
-  /**
    * Move or rename the file.
    *
    * If the source file is a temp file, the destination will no longer be
@@ -88,7 +67,7 @@ class File {
    * @param destinationPath The target name for the file.
    * @return The error code resulting from the operation (if any).
    */
-  std::error_code rename(const std::string & destinationPath);
+  const std::error_code & rename(const std::string & destinationPath);
 
   /**
    * Remove the file.
@@ -119,19 +98,19 @@ class File {
    */
   const std::string & getPath() const;
 
+  const std::error_code & getLastError() const;
+
+  File & append(std::string_view sv);
+
+  private:
   /**
    * The file stream.
    */
   std::fstream file;
 
-  private:
   std::string path;
-  std::ios_base::openmode mode;
-  bool isRead;
-  bool isWrite;
+  mutable std::error_code lastError;
   bool isTemp;
-
-  std::error_code open();
 };
 }
 

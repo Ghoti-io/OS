@@ -15,10 +15,12 @@ namespace Ghoti::OS {
  * List of error codes this library may generate.
  */
 enum class ErrorCode {
-  FILE_DOES_NOT_EXIST = 1,
+  NO_FILE_PATH_SPECIFIED = 1,
+  FILE_DOES_NOT_EXIST,
   FILE_EXISTS_AT_TARGET_PATH,
   FILE_COULD_NOT_BE_CLOSED,
   FILE_COULD_NOT_BE_OPENED,
+  ERROR_WRITING_TO_FILE,
 };
 
 /**

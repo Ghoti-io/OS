@@ -16,14 +16,18 @@ const char * OS::ErrorCategory::name() const noexcept {
 
 string OS::ErrorCategory::message(int ev) const {
   switch (ev) {
-    case static_cast<int>(OS::ErrorCode::FILE_DOES_NOT_EXIST):
+    case static_cast<int>(ErrorCode::NO_FILE_PATH_SPECIFIED):
+      return "No file path specified";
+    case static_cast<int>(ErrorCode::FILE_DOES_NOT_EXIST):
       return "File does not exist";
-    case static_cast<int>(OS::ErrorCode::FILE_EXISTS_AT_TARGET_PATH):
+    case static_cast<int>(ErrorCode::FILE_EXISTS_AT_TARGET_PATH):
       return "File exists at target path";
-    case static_cast<int>(OS::ErrorCode::FILE_COULD_NOT_BE_CLOSED):
+    case static_cast<int>(ErrorCode::FILE_COULD_NOT_BE_CLOSED):
       return "File could not be closed";
-    case static_cast<int>(OS::ErrorCode::FILE_COULD_NOT_BE_OPENED):
+    case static_cast<int>(ErrorCode::FILE_COULD_NOT_BE_OPENED):
       return "File could not be opened";
+    case static_cast<int>(ErrorCode::ERROR_WRITING_TO_FILE):
+      return "Error writing to file";
   }
   return "";
 }
