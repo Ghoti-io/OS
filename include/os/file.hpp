@@ -76,7 +76,7 @@ class File {
    *
    * @return The error code resulting from the operation (if any).
    */
-  std::error_code remove();
+  const std::error_code & remove();
 
   /**
    * Create a temporary file in the OS temp directory, matching the supplied
@@ -100,7 +100,7 @@ class File {
 
   const std::error_code & getLastError() const;
 
-  File & append(std::string_view sv);
+  const std::error_code & append(std::string_view sv);
 
   private:
   /**

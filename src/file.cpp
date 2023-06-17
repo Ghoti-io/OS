@@ -19,12 +19,8 @@ File::File() : file{}, path{}, lastError{}, isTemp{false} {
 
 File::File(const string & path) : file{}, path{path}, lastError{}, isTemp{false} {
   // Verify that the file exists.
-  error_code ec;
-  if (!filesystem::exists(this->path, ec)) {
+  if (!filesystem::exists(this->path, this->lastError)) {
     this->lastError = make_error_code(ErrorCode::FILE_DOES_NOT_EXIST);
-  }
-  else if (ec) {
-    this->lastError = ec;
   }
 }
 
@@ -72,20 +68,20 @@ const std::error_code & File::rename(const string & destinationPath) {
   return this->lastError;
 }
 
-std::error_code File::remove() {
-  std::error_code ec{};
+const std::error_code & File::remove() {
+  this->lastError = {};
 
-  if (!filesystem::remove(this->path, ec)) {
+  if (!filesystem::remove(this->path, this->lastError)) {
     // The file was not removed.  If there is no error, it is because there was
     // no file to be deleted in the first place.
-    if (!ec) {
-      ec = make_error_code(OS::ErrorCode::FILE_DOES_NOT_EXIST);
+    if (!this->lastError) {
+      this->lastError = make_error_code(OS::ErrorCode::FILE_DOES_NOT_EXIST);
     }
   }
   this->file = {};
   this->isTemp = false;
 
-  return ec;
+  return this->lastError;
 }
 
 File File::createTemp(const std::string & pattern) {
@@ -106,6 +102,8 @@ File File::createTemp(const std::string & pattern) {
 }
 
 File::operator string() const {
+  this->lastError = {};
+
   // Verify file open.
   fstream f{this->path, ios::in | ios::binary};
   if (!f.is_open()) {
@@ -128,20 +126,22 @@ const error_code & File::getLastError() const {
   return this->lastError;
 }
 
-File & File::append(string_view sv) {
+const error_code & File::append(string_view sv) {
+  this->lastError = {};
+
   // Open the file for writing then verify.
   fstream f{this->path, ios::out | ios::binary | ios::app};
   if (!f.is_open()) {
-    this->lastError =  make_error_code(ErrorCode::FILE_COULD_NOT_BE_OPENED);
-    return *this;
+    this->lastError = make_error_code(ErrorCode::FILE_COULD_NOT_BE_OPENED);
+  }
+  else {
+    // Write then verify.
+    f << sv;
+    if (file.fail()) {
+      this->lastError = make_error_code(ErrorCode::ERROR_WRITING_TO_FILE);
+    }
   }
 
-  // Write then verify.
-  f << sv;
-  if (file.fail()) {
-    this->lastError = make_error_code(ErrorCode::ERROR_WRITING_TO_FILE);
-  }
-
-  return *this;
+  return this->lastError;
 }
 

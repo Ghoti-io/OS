@@ -53,16 +53,14 @@ TEST(File, TempFile) {
     path = f.getPath();
 
     // Write to the temporary file.
-    f.append(contents);
-    EXPECT_FALSE(f.getLastError());
+    EXPECT_FALSE(f.append(contents));
 
     // Read back the contents of the temporary file.
     EXPECT_EQ(string{f}, contents);
     EXPECT_FALSE(f.getLastError());
 
     // Write to the temporary file again.
-    f.append(contents);
-    EXPECT_FALSE(f.getLastError());
+    EXPECT_FALSE(f.append(contents));
 
     // Read back the contents of the temporary file.
     EXPECT_EQ(string{f}, contents + contents);
