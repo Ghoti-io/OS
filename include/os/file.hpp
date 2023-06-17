@@ -98,14 +98,39 @@ class File {
    */
   const std::string & getPath() const;
 
+  /**
+   * Write the supplied bytes to the end of the file.
+   *
+   * @param sv The bytes to write to the end of the file.
+   * @return The error code resulting from the operation (if any).
+   */
   std::error_code append(std::string_view sv);
 
+  /**
+   * Truncate a file and write the supplied bytes to the newly trancated file.
+   *
+   * @param sv The bytes to write to the file.
+   * @return The error code resulting from the operation (if any).
+   */
   std::error_code truncate(std::string_view sv);
 
+  /**
+   * Test the file to see if it exists and return any error message that
+   * results from it.
+   *
+   * @return The error code resulting from the operation (if any).
+   */
   std::error_code test() const noexcept;
 
   private:
+  /**
+   * The path to the file.
+   */
   std::string path;
+
+  /**
+   * Stores whether or not the file is a temporary file.
+   */
   bool isTemp;
 };
 }
