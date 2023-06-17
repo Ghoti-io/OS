@@ -13,21 +13,12 @@
 using namespace std;
 using namespace Ghoti::OS;
 
-File::File() : file{}, path{}, lastError{}, isTemp{false} {
-  this->lastError = make_error_code(ErrorCode::NO_FILE_PATH_SPECIFIED);
-}
+File::File() : path{}, isTemp{false} {}
 
-File::File(const string & path) : file{}, path{path}, lastError{}, isTemp{false} {
-  // Verify that the file exists.
-  if (!filesystem::exists(this->path, this->lastError)) {
-    this->lastError = make_error_code(ErrorCode::FILE_DOES_NOT_EXIST);
-  }
-}
+File::File(const string & path) : path{path}, isTemp{false} {}
 
 File::File(File && source) {
-  this->file = move(source.file);
   this->path = move(source.path);
-  this->lastError = move(source.lastError);
   this->isTemp = source.isTemp;
   // This is a transfer of ownership, so the source must no longer identify
   // the target file as a temp file.
@@ -35,9 +26,7 @@ File::File(File && source) {
 }
 
 File & File::operator=(File && source) {
-  swap(this->file, source.file);
   swap(this->path, source.path);
-  swap(this->lastError, source.lastError);
   swap(this->isTemp, source.isTemp);
   return *this;
 }
@@ -48,40 +37,37 @@ File::~File() {
   }
 }
 
-const std::error_code & File::rename(const string & destinationPath) {
-  std::error_code ec{};
-
+error_code File::rename(const string & destinationPath) {
   // The behavior of filesystem::rename() is implementation-specific when the
   // target already exists, and therefore unreliable for this library.
   // As such, we will check manually to verify that the destination path is not
   // already in use.  Unfortunately, this is not atomic.
   // https://en.cppreference.com/w/cpp/io/c/rename
   // https://en.cppreference.com/w/cpp/filesystem/rename
-  if (filesystem::exists(destinationPath)) {
-    this->lastError = make_error_code(OS::ErrorCode::FILE_EXISTS_AT_TARGET_PATH);
+  error_code ec{};
+  if (filesystem::exists(destinationPath, ec)) {
+    return make_error_code(OS::ErrorCode::FILE_EXISTS_AT_TARGET_PATH);
   }
-  else {
-    filesystem::rename(this->path, destinationPath, ec);
-    this->lastError = ec;
-    this->isTemp = false;
-  }
-  return this->lastError;
+
+  ec.clear();
+  filesystem::rename(this->path, destinationPath, ec);
+  this->isTemp = false;
+  return ec;
 }
 
-const std::error_code & File::remove() {
-  this->lastError = {};
+error_code File::remove() {
+  error_code ec{};
 
-  if (!filesystem::remove(this->path, this->lastError)) {
+  if (!filesystem::remove(this->path, ec)) {
     // The file was not removed.  If there is no error, it is because there was
     // no file to be deleted in the first place.
-    if (!this->lastError) {
-      this->lastError = make_error_code(OS::ErrorCode::FILE_DOES_NOT_EXIST);
+    if (!ec) {
+      ec = make_error_code(OS::ErrorCode::FILE_DOES_NOT_EXIST);
     }
   }
-  this->file = {};
   this->isTemp = false;
 
-  return this->lastError;
+  return ec;
 }
 
 File File::createTemp(const std::string & pattern) {
@@ -102,12 +88,9 @@ File File::createTemp(const std::string & pattern) {
 }
 
 File::operator string() const {
-  this->lastError = {};
-
   // Verify file open.
   fstream f{this->path, ios::in | ios::binary};
   if (!f.is_open()) {
-    this->lastError =  make_error_code(ErrorCode::FILE_COULD_NOT_BE_OPENED);
     return "";
   }
 
@@ -122,26 +105,48 @@ const string & File::getPath() const {
   return this->path;
 }
 
-const error_code & File::getLastError() const {
-  return this->lastError;
-}
-
-const error_code & File::append(string_view sv) {
-  this->lastError = {};
-
+error_code File::append(string_view sv) {
   // Open the file for writing then verify.
   fstream f{this->path, ios::out | ios::binary | ios::app};
   if (!f.is_open()) {
-    this->lastError = make_error_code(ErrorCode::FILE_COULD_NOT_BE_OPENED);
-  }
-  else {
-    // Write then verify.
-    f << sv;
-    if (file.fail()) {
-      this->lastError = make_error_code(ErrorCode::ERROR_WRITING_TO_FILE);
-    }
+    return make_error_code(ErrorCode::FILE_COULD_NOT_BE_OPENED);
   }
 
-  return this->lastError;
+  // Write then verify.
+  f << sv;
+  if (f.fail()) {
+    return make_error_code(ErrorCode::ERROR_WRITING_TO_FILE);
+  }
+
+  return {};
+}
+
+error_code File::truncate(string_view sv) {
+  // Open the file for writing then verify.
+  fstream f{this->path, ios::out | ios::binary | ios::trunc};
+  if (!f.is_open()) {
+    return make_error_code(ErrorCode::FILE_COULD_NOT_BE_OPENED);
+  }
+
+  // Write then verify.
+  f << sv;
+  if (f.fail()) {
+    return make_error_code(ErrorCode::ERROR_WRITING_TO_FILE);
+  }
+
+  return {};
+}
+
+error_code File::test() const noexcept {
+  if (!this->path.length()) {
+    return make_error_code(ErrorCode::NO_FILE_PATH_SPECIFIED);
+  }
+  error_code ec{};
+  if (!filesystem::exists(this->path, ec)) {
+    return ec
+      ? ec
+      : make_error_code(ErrorCode::FILE_DOES_NOT_EXIST);
+  }
+  return {};
 }
 

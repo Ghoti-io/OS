@@ -67,7 +67,7 @@ class File {
    * @param destinationPath The target name for the file.
    * @return The error code resulting from the operation (if any).
    */
-  const std::error_code & rename(const std::string & destinationPath);
+  std::error_code rename(const std::string & destinationPath);
 
   /**
    * Remove the file.
@@ -76,7 +76,7 @@ class File {
    *
    * @return The error code resulting from the operation (if any).
    */
-  const std::error_code & remove();
+  std::error_code remove();
 
   /**
    * Create a temporary file in the OS temp directory, matching the supplied
@@ -98,18 +98,14 @@ class File {
    */
   const std::string & getPath() const;
 
-  const std::error_code & getLastError() const;
+  std::error_code append(std::string_view sv);
 
-  const std::error_code & append(std::string_view sv);
+  std::error_code truncate(std::string_view sv);
+
+  std::error_code test() const noexcept;
 
   private:
-  /**
-   * The file stream.
-   */
-  std::fstream file;
-
   std::string path;
-  mutable std::error_code lastError;
   bool isTemp;
 };
 }

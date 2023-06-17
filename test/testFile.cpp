@@ -16,7 +16,7 @@ TEST(File, DefaultConstructor) {
   // Default-constructed file should not actually point to anything.
   File f{};
   EXPECT_EQ(f.getPath(), "");
-  EXPECT_EQ(f.getLastError(), ErrorCode::NO_FILE_PATH_SPECIFIED);
+  EXPECT_EQ(f.test(), ErrorCode::NO_FILE_PATH_SPECIFIED);
 }
 
 TEST(File, ExistingFile) {
@@ -24,7 +24,7 @@ TEST(File, ExistingFile) {
 
   // Open an existing file.
   File f{path};
-  EXPECT_FALSE(f.getLastError());
+  EXPECT_FALSE(f.test());
   EXPECT_EQ(f.getPath(), path);
 
   // Read contents.
@@ -37,7 +37,7 @@ TEST(File, ExistingFile) {
 TEST(File, MissingFile) {
   {
     File f{"fileDoesntExist.txt"};
-    EXPECT_EQ(f.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
+    EXPECT_EQ(f.test(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
 }
 
@@ -45,7 +45,7 @@ TEST(File, TempFile) {
   string path{};
   {
     auto f{File::createTemp("abc123")};
-    EXPECT_FALSE(f.getLastError());
+    EXPECT_FALSE(f.test());
     string contents{"file contents"};
 
     // Save the path of the temporary file so that later we can verify that the
@@ -57,7 +57,6 @@ TEST(File, TempFile) {
 
     // Read back the contents of the temporary file.
     EXPECT_EQ(string{f}, contents);
-    EXPECT_FALSE(f.getLastError());
 
     // Write to the temporary file again.
     EXPECT_FALSE(f.append(contents));
@@ -71,13 +70,14 @@ TEST(File, TempFile) {
 
   // The file should not exist.
   File f{path};
-  EXPECT_EQ(f.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
+  EXPECT_EQ(f.test(), ErrorCode::FILE_DOES_NOT_EXIST);
 }
 
 TEST(Delete, MissingFile) {
   // Delete a file that does not exist.
   {
     File f{"fileDoesntExist.txt"};
+    EXPECT_EQ(f.test(), ErrorCode::FILE_DOES_NOT_EXIST);
     EXPECT_EQ(f.remove(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
 }
@@ -89,12 +89,10 @@ TEST(Delete, ExistingFile) {
   // Create a temp file and rename it so that it is not automatically deleted.
   {
     auto f{File::createTemp("abc123")};
-    f.append(contents);
-    EXPECT_FALSE(f.getLastError());
+    EXPECT_FALSE(f.append(contents));
 
     newName = f.getPath() + ".2";
     EXPECT_FALSE(f.rename(newName));
-    EXPECT_FALSE(f.getLastError());
   }
 
   // Open the file again to verify that the rename succeeded, then delete the
@@ -102,16 +100,14 @@ TEST(Delete, ExistingFile) {
   {
     File f{newName};
     EXPECT_EQ(string{f}, contents);
-    EXPECT_FALSE(f.getLastError());
 
-    f.remove();
-    EXPECT_FALSE(f.getLastError());
+    EXPECT_FALSE(f.remove());
   }
 
   // Verify that the file was deleted.
   {
     File f{newName};
-    EXPECT_EQ(f.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
+    EXPECT_EQ(f.test(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
 }
 
@@ -129,15 +125,12 @@ TEST(Rename, OverExisting) {
     EXPECT_NE(f1.getPath(), f2.getPath());
 
     // Write something into both files to confirm that they both exist.
-    f1.append("1");
-    EXPECT_FALSE(f1.getLastError());
-    f2.append("2");
-    EXPECT_FALSE(f2.getLastError());
+    EXPECT_FALSE(f1.append("1"));
+    EXPECT_FALSE(f2.append("2"));
 
 
     // Attempt to rename one file to that of the other.
     EXPECT_EQ(f2.rename(f1.getPath()), ErrorCode::FILE_EXISTS_AT_TARGET_PATH);
-    EXPECT_TRUE(f2.getLastError());
     EXPECT_EQ(f2.getPath(), f2Path);
   }
 
@@ -146,9 +139,17 @@ TEST(Rename, OverExisting) {
   {
     File f1{f1Path};
     File f2{f2Path};
-    EXPECT_EQ(f1.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
-    EXPECT_EQ(f2.getLastError(), ErrorCode::FILE_DOES_NOT_EXIST);
+    EXPECT_EQ(f1.test(), ErrorCode::FILE_DOES_NOT_EXIST);
+    EXPECT_EQ(f2.test(), ErrorCode::FILE_DOES_NOT_EXIST);
   }
+}
+
+TEST(File, Truncate) {
+  auto f{File::createTemp("abc123")};
+  EXPECT_FALSE(f.append("a"));
+  EXPECT_EQ(string{f}, "a");
+  EXPECT_FALSE(f.truncate("b"));
+  EXPECT_EQ(string{f}, "b");
 }
 
 int main(int argc, char** argv) {
