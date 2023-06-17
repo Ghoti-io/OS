@@ -14,17 +14,17 @@ namespace Ghoti::OS {
 /**
  * List of error codes this library may generate.
  */
-enum class error_code {
-  file_does_not_exist = 1,
-  file_exists_at_target_path,
-  file_could_not_be_closed,
-  file_could_not_be_opened,
+enum class ErrorCode {
+  FILE_DOES_NOT_EXIST = 1,
+  FILE_EXISTS_AT_TARGET_PATH,
+  FILE_COULD_NOT_BE_CLOSED,
+  FILE_COULD_NOT_BE_OPENED,
 };
 
 /**
  * A category to which all error codes from this library will belong.
  */
-class error_category : public std::error_category {
+class ErrorCategory : public std::error_category {
   public:
 
   /**
@@ -67,7 +67,7 @@ const std::error_category & getErrorCategory();
  * @param e The error code enum value.
  * @return The error code object.
  */
-std::error_code make_error_code(Ghoti::OS::error_code e);
+std::error_code make_error_code(Ghoti::OS::ErrorCode e);
 
 /**
  * Create an error condition from this library's category.
@@ -75,7 +75,7 @@ std::error_code make_error_code(Ghoti::OS::error_code e);
  * @param e The error code enum value.
  * @return The error condition object.
  */
-std::error_condition make_error_condition(Ghoti::OS::error_code e);
+std::error_condition make_error_condition(Ghoti::OS::ErrorCode e);
 
 namespace std {
   /**
@@ -83,7 +83,7 @@ namespace std {
    * as an extension to the std::error_code functionality.
    */
   template<>
-  struct is_error_condition_enum<Ghoti::OS::error_code> : public true_type {};
+  struct is_error_condition_enum<Ghoti::OS::ErrorCode> : public true_type {};
 
   /**
    * Custom comparitor so that OS::error_code values can be compared directly
@@ -96,7 +96,7 @@ namespace std {
    * @param rhs The Ghoti::OS::error_code to compare.
    * @return True if they are equal, false otherwise.
    */
-  bool operator==(const std::error_code & lhs, Ghoti::OS::error_code rhs);
+  bool operator==(const std::error_code & lhs, Ghoti::OS::ErrorCode rhs);
 }
 
 

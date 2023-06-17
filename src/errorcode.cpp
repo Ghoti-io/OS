@@ -10,42 +10,42 @@ using namespace Ghoti::OS;
 
 // See http://blog.think-async.com/2010/04/system-error-support-in-c0x-part-5.html
 
-const char * OS::error_category::name() const noexcept {
+const char * OS::ErrorCategory::name() const noexcept {
   return "Ghoti.io OS";
 }
 
-string OS::error_category::message(int ev) const {
+string OS::ErrorCategory::message(int ev) const {
   switch (ev) {
-    case static_cast<int>(OS::error_code::file_does_not_exist):
+    case static_cast<int>(OS::ErrorCode::FILE_DOES_NOT_EXIST):
       return "File does not exist";
-    case static_cast<int>(OS::error_code::file_exists_at_target_path):
+    case static_cast<int>(OS::ErrorCode::FILE_EXISTS_AT_TARGET_PATH):
       return "File exists at target path";
-    case static_cast<int>(OS::error_code::file_could_not_be_closed):
+    case static_cast<int>(OS::ErrorCode::FILE_COULD_NOT_BE_CLOSED):
       return "File could not be closed";
-    case static_cast<int>(OS::error_code::file_could_not_be_opened):
+    case static_cast<int>(OS::ErrorCode::FILE_COULD_NOT_BE_OPENED):
       return "File could not be opened";
   }
   return "";
 }
 
-bool OS::error_category::equivalent([[maybe_unused]] const std::error_code & code,[[maybe_unused]]  int condition) const noexcept {
+bool OS::ErrorCategory::equivalent([[maybe_unused]] const std::error_code & code,[[maybe_unused]]  int condition) const noexcept {
   return false;
 }
 
 const std::error_category & OS::getErrorCategory() {
-  static OS::error_category instance{};
+  static OS::ErrorCategory instance{};
   return instance;
 }
 
-std::error_code make_error_code(OS::error_code e) {
+std::error_code make_error_code(OS::ErrorCode e) {
   return std::error_code(static_cast<int>(e), OS::getErrorCategory());
 }
 
-std::error_condition make_error_condition(OS::error_code e) {
+std::error_condition make_error_condition(OS::ErrorCode e) {
   return std::error_condition(static_cast<int>(e), OS::getErrorCategory());
 }
 
-bool std::operator==(const std::error_code & lhs, Ghoti::OS::error_code rhs) {
+bool std::operator==(const std::error_code & lhs, Ghoti::OS::ErrorCode rhs) {
   return lhs == ::make_error_code(rhs);
 }
 

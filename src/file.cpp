@@ -50,7 +50,7 @@ std::error_code File::open(const char * mode) {
   // Close any open file.
   if (this->file.is_open()) {
     if (!this->close()) {
-      return make_error_code(OS::error_code::file_could_not_be_closed);
+      return make_error_code(OS::ErrorCode::FILE_COULD_NOT_BE_CLOSED);
     }
   }
 
@@ -68,7 +68,7 @@ std::error_code File::open(const char * mode) {
   // Return whether or not there was an error.
   return this->file.is_open()
     ? std::error_code{}
-    : make_error_code(OS::error_code::file_could_not_be_opened);
+    : make_error_code(OS::ErrorCode::FILE_COULD_NOT_BE_OPENED);
 }
 
 std::error_code File::close() {
@@ -78,7 +78,7 @@ std::error_code File::close() {
   this->isWrite = false;
 
   return this->file.fail()
-    ? make_error_code(OS::error_code::file_could_not_be_closed)
+    ? make_error_code(OS::ErrorCode::FILE_COULD_NOT_BE_CLOSED)
     : std::error_code{};
 }
 
@@ -93,7 +93,7 @@ std::error_code File::rename(const string & destinationPath) {
   // https://en.cppreference.com/w/cpp/io/c/rename
   // https://en.cppreference.com/w/cpp/filesystem/rename
   if (filesystem::exists(destinationPath)) {
-    return make_error_code(OS::error_code::file_exists_at_target_path);
+    return make_error_code(OS::ErrorCode::FILE_EXISTS_AT_TARGET_PATH);
   }
   filesystem::rename(this->path, destinationPath, ec);
   this->isTemp = false;
@@ -109,7 +109,7 @@ std::error_code File::remove() {
     // The file was not removed.  If there is no error, it is because there was
     // no file to be deleted in the first place.
     if (!ec) {
-      ec = make_error_code(OS::error_code::file_does_not_exist);
+      ec = make_error_code(OS::ErrorCode::FILE_DOES_NOT_EXIST);
     }
   }
   this->file = {};
